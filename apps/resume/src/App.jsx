@@ -9,6 +9,9 @@ import { profile, experience, skillGroups, achievements, extras } from "./data/r
 export default function App() {
   return (
     <>
+      <header className="resume-topbar">
+        <a href="/" className="resume-home-link">← Back to home 🏠</a>
+      </header>
       <div className="grid-bg" aria-hidden="true" />
       <Hero profile={profile} />
       <Experience items={experience} />
