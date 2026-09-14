@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.dev.vars
+.wrangler/
+
+apps/resume/node_modules/
+apps/resume/dist/

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Gregory Marchese</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink: #14161a;
+    --ink-2: #1c1f24;
+    --paper: #eceff1;
+    --paper-dim: #9aa2ab;
+    --brass: #b98d4f;
+    --rust: #a3462f;
+    --sage: #6e7f6b;
+    --serif: 'Fraunces', serif;
+    --sans: 'Space Grotesk', sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; height:100%; }
+  body{
+    background: var(--ink);
+    color: var(--paper);
+    font-family: var(--sans);
+    min-height: 100vh;
+    display:flex;
+    align-items:center;
+    background-image: radial-gradient(ellipse at 30% 10%, rgba(185,141,79,0.08), transparent 55%),
+                       radial-gradient(ellipse at 80% 90%, rgba(163,70,47,0.06), transparent 55%);
+  }
+  .wrap{ max-width: 880px; margin: 0 auto; padding: 48px 28px; width: 100%; }
+
+  header{ margin-bottom: 48px; }
+  h1{
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: clamp(32px, 5vw, 48px);
+    margin: 0 0 10px;
+  }
+  header p{
+    color: var(--paper-dim);
+    font-size: 16px;
+    margin: 0;
+    max-width: 46ch;
+  }
+
+  .tiles{
+    display:grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+  }
+
+  .tile{
+    display:block;
+    padding: 26px 24px;
+    border-radius: 10px;
+    background: var(--ink-2);
+    border: 1px solid rgba(236,239,241,0.08);
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  .tile:hover{
+    transform: translateY(-4px);
+    border-color: var(--accent, var(--brass));
+    background: #202329;
+  }
+  .tile .kicker{
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent, var(--brass));
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+  .tile h2{
+    font-family: var(--serif);
+    font-weight: 500;
+    font-size: 22px;
+    margin: 0 0 8px;
+  }
+  .tile p{
+    font-size: 13.5px;
+    color: var(--paper-dim);
+    margin: 0;
+    line-height: 1.5;
+  }
+  .tile .arrow{
+    position: absolute;
+    top: 24px; right: 22px;
+    font-size: 18px;
+    color: var(--paper-dim);
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+  .tile:hover .arrow{
+    transform: translate(3px, -3px);
+    color: var(--paper);
+  }
+
+  .tile.soon{
+    border-style: dashed;
+    opacity: 0.55;
+    cursor: default;
+  }
+  .tile.soon:hover{
+    transform: none;
+    border-color: rgba(236,239,241,0.08);
+    background: var(--ink-2);
+  }
+
+  footer{
+    margin-top: 44px;
+    font-size: 12.5px;
+    color: var(--paper-dim);
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <h1>Gregory Marchese</h1>
+      <p>A few things live here. Pick one.</p>
+    </header>
+
+    <div class="tiles">
+      <a class="tile" href="/resume/" style="--accent: var(--brass)">
+        <div class="kicker">Résumé</div>
+        <h2>Work &amp; background</h2>
+        <p>Experience, projects, and how to get in touch.</p>
+        <span class="arrow">↗</span>
+      </a>
+
+      <a class="tile" href="/RecordCollection/" style="--accent: var(--rust)">
+        <div class="kicker">Collection</div>
+        <h2>Record Collection</h2>
+        <p>A running, genre-sorted catalog of the vinyl on my shelves.</p>
+        <span class="arrow">↗</span>
+      </a>
+
+      <div class="tile soon">
+        <div class="kicker">Coming soon</div>
+        <h2>More to come</h2>
+        <p>This spot's reserved for whatever's next.</p>
+      </div>
+    </div>
+
+    <footer>gregory-marchese.com</footer>
+  </div>
+</body>
+</html>
