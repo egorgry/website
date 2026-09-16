@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>My Collection — Discogs</title>
+<title>The Crate — a record collection</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
@@ -49,7 +49,24 @@
   header.site{
     padding: 48px 0 32px;
   }
-  header.site .wrap{
+  .home-link{
+    margin-bottom: 18px;
+  }
+  .home-link a{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    letter-spacing: 0.04em;
+    color: var(--paper-dim);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+  .home-link a:hover{
+    color: var(--brass-bright);
+    text-decoration: none;
+  }
+  .header-row{
     display:flex;
     justify-content: space-between;
     align-items: baseline;
@@ -295,10 +312,11 @@
 
 <header class="site">
   <div class="wrap">
-     <a href="/" className="resume-home-link">← Back to home 🏠</a>
-      <h1 class="site-title">My Collection<span class="fine">a running catalog of records worth keeping</span></h1>
-    </a>
-    <div class="stats" id="stats"></div>
+    <div class="home-link"><a href="/">← Home</a></div>
+    <div class="header-row">
+      <h1 class="site-title">The Crate<span class="fine">a running catalog of records worth keeping</span></h1>
+      <div class="stats" id="stats"></div>
+    </div>
   </div>
 </header>
 
