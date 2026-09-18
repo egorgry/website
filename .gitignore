@@ -5,3 +5,6 @@ dist/
 
 apps/resume/node_modules/
 apps/resume/dist/
+
+apps/record-collection/node_modules/
+apps/record-collection/dist/
