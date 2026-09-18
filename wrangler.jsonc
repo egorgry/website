@@ -9,5 +9,12 @@
   },
   "observability": {
     "enabled": true
+    {
+  // ...
+  "vars": {
+    "DISCOGS_USER": "gjm4arc",
+  },
+  // ...
+}
   }
 }
