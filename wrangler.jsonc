@@ -11,6 +11,7 @@
     "enabled": true
   },
   "vars": {
-    "DISCOGS_USERNAME": "gjm4arc"
+    "DISCOGS_USERNAME": "gjm4arc",
+    "DISCOGS_TOKEN": ""
   }
 }
