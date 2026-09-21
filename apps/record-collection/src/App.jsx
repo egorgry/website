@@ -68,7 +68,7 @@ export default function App() {
     <div className="wrap">
       <header className="page-header">
         <a className="home-link" href="/">
-          ← Back to Home 🏠
+          ← BACK TO HOME 🏠
         </a>
         <div className="header-row">
           <h1>Record Collection</h1>
