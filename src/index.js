@@ -4,7 +4,10 @@
 // (functions/api/collection.js), which Cloudflare's build no longer picks
 // up automatically for this project. This does the same two jobs:
 //   1. Serve everything in dist/ as static assets (via the ASSETS binding).
-//   2. Handle /api/collection with the Discogs proxy + edge cache.
+//   2. Handle /api/collection with the Discogs proxy + edge cache. A
+//      successful response is cached for an hour; a 429 (rate limit) from
+//      Discogs is negative-cached briefly so a burst of traffic doesn't
+//      pile more requests onto Discogs mid-rate-limit.
 
 export default {
   async fetch(request, env, ctx) {
@@ -53,6 +56,23 @@ async function handleCollection(request, env, ctx) {
 
       if (!res.ok) {
         const detail = await res.text();
+
+        if (res.status === 429) {
+          // Negative-cache rate-limit responses briefly. Without this, a
+          // burst of site traffic while Discogs is rate-limiting us would
+          // each re-hit Discogs directly and only prolong the limit.
+          const retryAfter = Number(res.headers.get('Retry-After'));
+          const ttl = Number.isFinite(retryAfter) && retryAfter > 0 ? Math.min(retryAfter, 60) : 30;
+
+          const response = json(
+            { error: 'Discogs API rate limit reached. Try again shortly.', detail },
+            429,
+            { 'Cache-Control': `public, max-age=${ttl}` }
+          );
+          ctx.waitUntil(cache.put(cacheKey, response.clone()));
+          return response;
+        }
+
         return json({ error: `Discogs API responded ${res.status}`, detail }, 502);
       }
 
@@ -103,9 +123,9 @@ function simplify(item) {
   };
 }
 
-function json(obj, status = 200) {
+function json(obj, status = 200, extraHeaders = {}) {
   return new Response(JSON.stringify(obj), {
     status,
-    headers: { 'Content-Type': 'application/json' }
+    headers: { 'Content-Type': 'application/json', ...extraHeaders }
   });
 }
