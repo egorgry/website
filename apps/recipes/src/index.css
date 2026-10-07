@@ -1,0 +1,222 @@
+:root {
+  --bg: #0a0a0d;
+  --surface: #131318;
+  --surface-hover: #1a1a21;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #e8e8ec;
+  --text-dim: #8b8b96;
+  --accent: #8b7cf6;
+  --accent-soft: rgba(139, 124, 246, 0.15);
+  --amber: #f0a848;
+  --radius: 12px;
+  --sans: 'Space Grotesk', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; min-height: 100%; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  -webkit-font-smoothing: antialiased;
+  background-image: radial-gradient(ellipse at 15% -10%, rgba(139, 124, 246, 0.08), transparent 50%),
+    radial-gradient(ellipse at 90% 10%, rgba(240, 168, 72, 0.05), transparent 45%);
+}
+
+a { color: inherit; }
+code {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.9em;
+}
+
+.wrap { max-width: 840px; margin: 0 auto; padding: 0 24px 60px; }
+
+/* ---------- header ---------- */
+.page-header { padding: 40px 0 28px; }
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-decoration: none;
+  margin-bottom: 20px;
+  transition: color 0.15s ease;
+}
+.back-link:hover { color: var(--text); }
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.page-header h1 {
+  font-size: clamp(26px, 4vw, 36px);
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+.count { font-size: 13px; color: var(--text-dim); }
+.count b { color: var(--text); font-weight: 600; }
+.detail-meta { font-size: 13.5px; color: var(--text-dim); margin: 10px 0 0; }
+.intro { color: var(--text-dim); font-size: 15px; line-height: 1.6; margin: 14px 0 0; }
+.detail-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  margin-top: 16px;
+  font-size: 13px;
+}
+.detail-actions a { color: var(--accent); text-decoration: none; }
+.detail-actions a:hover { text-decoration: underline; }
+.link-button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 7px;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.link-button:hover { color: var(--text); border-color: var(--accent); }
+
+/* ---------- controls ---------- */
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 0 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 32px;
+}
+.search-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.search-input::placeholder { color: var(--text-dim); }
+.search-input:focus { border-color: var(--accent); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  border-radius: 999px;
+  padding: 6px 13px;
+  font-size: 12.5px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); }
+.chip.active { background: var(--accent-soft); border-color: var(--accent); color: var(--text); }
+
+/* ---------- list grid ---------- */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
+  padding-bottom: 40px;
+}
+.card {
+  display: block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+.card:hover { transform: translateY(-3px); border-color: var(--accent); }
+.card h2 { font-size: 16px; font-weight: 600; margin: 0 0 6px; }
+.card-meta { font-size: 12.5px; color: var(--text-dim); }
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.tag {
+  font-size: 11px;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 2px 9px;
+}
+
+/* ---------- recipe detail ---------- */
+.detail-body {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 36px;
+  margin-top: 32px;
+}
+@media (max-width: 640px) {
+  .detail-body { grid-template-columns: 1fr; }
+}
+.detail-body h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin: 0 0 14px;
+}
+.detail-body h3 {
+  font-size: 14px;
+  margin: 18px 0 8px;
+  color: var(--text);
+}
+.checklist { list-style: none; padding: 0; margin: 0; }
+.checklist li { margin-bottom: 9px; }
+.checklist label {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14.5px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+.checklist input { margin-top: 3px; accent-color: var(--accent); }
+.checklist label.done span { color: var(--text-dim); text-decoration: line-through; }
+.steps ol { padding-left: 20px; margin: 0; }
+.steps li { margin-bottom: 14px; font-size: 14.5px; line-height: 1.55; }
+
+.extra { margin-top: 36px; padding-top: 24px; border-top: 1px solid var(--border); }
+.extra h2 {
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+  margin: 0 0 12px;
+}
+.extra p, .extra li { font-size: 14.5px; line-height: 1.6; }
+.extra ul { padding-left: 20px; margin: 0; }
+
+/* ---------- states ---------- */
+.state { padding: 60px 0; text-align: center; color: var(--text-dim); font-size: 14px; }
+.banner {
+  text-align: center;
+  font-size: 12.5px;
+  color: var(--text-dim);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px;
+  margin-bottom: 24px;
+}
+
+/* ---------- print ---------- */
+@media print {
+  .back-link, .controls, .link-button, .detail-actions { display: none; }
+  body { background: #fff; color: #111; }
+  .card, .tag, code { border-color: #ccc; }
+  a { color: #111; }
+}

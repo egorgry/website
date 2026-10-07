@@ -45,12 +45,14 @@ function buildApp(name) {
 
 const resumeBuilt = buildApp('resume');
 const recordCollectionBuilt = buildApp('record-collection');
+const recipesBuilt = buildApp('recipes');
 
 // 3. Copy each piece into place.
 const copies = [
   { from: 'sites/launchpad', to: '.' },
   ...(recordCollectionBuilt ? [{ from: 'apps/record-collection/dist', to: 'RecordCollection' }] : []),
   ...(resumeBuilt ? [{ from: 'apps/resume/dist', to: 'resume' }] : []),
+  ...(recipesBuilt ? [{ from: 'apps/recipes/dist', to: 'recipes' }] : []),
 ];
 
 for (const { from, to } of copies) {

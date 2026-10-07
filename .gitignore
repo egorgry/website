@@ -8,3 +8,6 @@ apps/resume/dist/
 
 apps/record-collection/node_modules/
 apps/record-collection/dist/
+
+apps/recipes/node_modules/
+apps/recipes/dist/
