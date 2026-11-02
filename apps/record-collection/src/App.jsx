@@ -85,7 +85,7 @@ export default function App() {
       </header>
 
       {isDemo && (
-        <div className="banner">Showing sample records — connect /api/collection to see your own.</div>
+        <div className="banner">Showing sample records — connection to /api/collection has hit a limit. 🙁 </div>
       )}
 
       <Featured record={featured} />
