@@ -2,7 +2,8 @@
 
 A personal site deployed as a single Cloudflare **Worker**: one launchpad
 page at the root, a couple of small apps under subpaths, and one Worker
-script that serves everything and handles the Discogs API proxy.
+script that serves everything and keeps a cached copy of your Discogs
+collection fresh.
 
 ```
 .
@@ -12,10 +13,10 @@ script that serves everything and handles the Discogs API proxy.
 │   ├── record-collection/       → deploys to  /RecordCollection/  (Vite + React)
 │   └── resume/                   → deploys to  /resume/     (Vite + React)
 ├── src/
-│   └── index.js                  → the Worker: serves static assets + runs /api/collection
+│   └── index.js                  → the Worker: static assets, /api/collection (reads KV), cron refresh
 ├── scripts/
 │   └── build.mjs                 → builds each app and assembles everything into dist/
-├── wrangler.jsonc                 → Worker config: entry point, assets binding, plain vars
+├── wrangler.jsonc                 → Worker config: assets, plain vars, KV binding, cron schedule
 └── package.json
 ```
 
@@ -34,9 +35,33 @@ piece isn't set up yet, so any one section can be worked on independently.
 
 `wrangler deploy` then reads `wrangler.jsonc`, bundles `src/index.js` as
 the Worker, and binds `dist/` to it as static assets (`env.ASSETS`).
-`src/index.js` checks the request path: `/api/collection` runs the
-Discogs proxy directly; everything else falls through to
+`src/index.js` checks the request path: `/api/collection` is answered from
+KV (see below); everything else falls through to
 `env.ASSETS.fetch(request)`.
+
+### How the collection stays fresh (and why it can't hit Discogs' rate limit)
+
+Visitors never trigger Discogs calls. Instead:
+
+1. A **cron trigger** (`"triggers"` in `wrangler.jsonc`, every 6 hours by
+   default) runs the Worker's `scheduled()` handler, which pages through
+   your Discogs collection and writes the result to **Workers KV**
+   (binding `COLLECTION`, key `collection:v1`).
+2. `/api/collection` just reads that KV value. Discogs sees roughly two
+   requests per refresh, however much traffic the site gets.
+3. If a refresh fails (Discogs down, rate limited, bad token), the
+   handler retries with backoff, then gives up **without touching KV**, so
+   the site keeps serving the last good copy. The failed run shows up in
+   the Worker's logs.
+4. Only on the very first deploy, when KV is still empty, the first
+   request fills it once (concurrent visitors share that one fetch). If
+   that fails, the API returns `503` with `Retry-After` and the front end
+   shows sample data until the next successful refresh.
+
+To change how often it refreshes, edit the cron expression in
+`wrangler.jsonc` (e.g. `"0 * * * *"` for hourly) and push. New records
+show up after the next refresh plus up to ~6 minutes of browser/edge
+caching.
 
 **`wrangler.jsonc` must stay committed.** If it's ever missing, Cloudflare
 generates a bare-bones one at build time that serves assets only — no
@@ -70,11 +95,11 @@ Worker running), so the record collection page falls back to sample data
 automatically — that's expected, not a bug.
 
 To run the **whole site** as it will actually behave in production,
-including the Worker and the Discogs proxy:
+including the Worker, KV and the refresh job:
 
 ```bash
-npm run build
-npx wrangler dev
+npm install
+npm run preview     # = npm run build && npx wrangler dev --test-scheduled
 ```
 
 This needs a `.dev.vars` file at the repo root (never commit this one):
@@ -86,6 +111,14 @@ DISCOGS_TOKEN=your-real-token
 Then visit `http://localhost:8787` (Wrangler will print the exact port).
 The launchpad, `/resume/`, `/RecordCollection/`, and `/api/collection`
 all behave exactly as they will once deployed.
+
+Locally, KV is a simulated store that is separate from production. The
+first request to `/api/collection` fills it, same as a fresh deploy. To
+run the cron job on demand while `wrangler dev` is running:
+
+```bash
+curl "http://localhost:8787/__scheduled?cron=0+*/6+*+*+*"
+```
 
 ## Environment variables — read this before touching them
 
@@ -145,6 +178,18 @@ What this means in practice:
 5. Attach your custom domain (gregory-marchese.com) under Settings →
    Domains & Routes.
 
+The KV namespace needs no manual setup: `wrangler.jsonc` declares the
+`COLLECTION` binding without an ID, and wrangler (4.45.0+) creates the
+namespace on the first deploy. If your build log instead fails on the KV
+binding, create it yourself and pin it:
+
+```bash
+npx wrangler kv namespace create COLLECTION
+```
+
+then add the `id` it prints to the binding in `wrangler.jsonc`:
+`{ "binding": "COLLECTION", "id": "<that id>" }`.
+
 ### Every deploy after that
 
 Just push to your production branch. Cloudflare Workers Builds runs
@@ -153,19 +198,20 @@ needed unless you're changing credentials (see above) or build settings.
 
 ### Verifying a deploy worked
 
-Check the build log's final lines. A healthy deploy shows all three
-bindings:
+Check the build log's final lines. Under "Your Worker has access to the
+following bindings" a healthy deploy lists all four:
 
-```
-Your Worker has access to the following bindings:
-Binding                Resource
-env.ASSETS              Assets
-env.DISCOGS_USERNAME    Environment Variable
-env.DISCOGS_TOKEN       Secret
-```
+- `env.COLLECTION` (resource type **KV Namespace**)
+- `env.ASSETS` (Assets)
+- `env.DISCOGS_USERNAME` (Environment Variable)
+- `env.DISCOGS_TOKEN` (Secret)
 
-If `DISCOGS_TOKEN` is missing from that list, it either isn't set, or
-isn't set as type Secret — see "Environment variables" above.
+The deploy output should also mention the cron schedule, and it's visible
+in the Worker's cron/trigger settings in the Cloudflare dashboard.
+
+If `DISCOGS_TOKEN` is missing from the bindings, it either isn't set, or
+isn't set as type Secret — see "Environment variables" above. If
+`env.COLLECTION` is missing, see the KV note under "First-time setup".
 
 ## Troubleshooting
 
@@ -175,18 +221,38 @@ missing or wasn't picked up. Confirm it's committed at the repo root
 with `"main": "src/index.js"` and an `"assets"` block, and check the
 build log for a bindings list at the end (see above).
 
-**`{"error":"Missing DISCOGS_USERNAME or DISCOGS_TOKEN environment variable."}`**
-One of the two isn't bound. Check the build log's bindings list to see
-which is actually missing, then fix per "Environment variables" above.
+**`/api/collection` returns `503` — "The collection is not available yet"**
+KV is empty and the first fill failed (it retries after a minute). This is
+the expected state right after the first deploy if Discogs is unreachable
+or the credentials are wrong. The reason is in the Worker's logs (Cloudflare
+dashboard → the Worker → Observability → Logs); the entries below explain the usual ones.
+Once any refresh succeeds the 503 goes away and stays away, because a
+failed refresh never overwrites good data.
 
-**`{"error":"Discogs API responded 401", ...}`**
-The token is invalid, revoked, or was pasted with a stray space/newline.
-Regenerate it and re-add it as a Secret.
+**`/api/collection` returns `500` mentioning the `COLLECTION` binding**
+The KV binding isn't attached to the deployed Worker. Check the build log's
+bindings list, and see the KV note under "First-time setup".
 
-**`{"error":"Discogs API responded 404", "detail":"User does not exist..."}`**
-`DISCOGS_USERNAME` doesn't match a real Discogs account. Double-check the
-exact, case-sensitive username in the profile URL and update it in
-`wrangler.jsonc` (not the dashboard — see why above).
+**Discogs errors now appear in the logs, not in the API response**
+Since the API only reads KV, problems talking to Discogs show up as failed
+cron runs (or a failed first fill) in the Worker's logs. The usual ones:
+
+- `Missing DISCOGS_USERNAME or DISCOGS_TOKEN environment variable` — one of
+  the two isn't bound. Check the build log's bindings list, then fix per
+  "Environment variables" above.
+- `Discogs API responded 401` — the token is invalid, revoked, or was pasted
+  with a stray space/newline. Regenerate it and re-add it as a Secret.
+- `Discogs API responded 404` / `User does not exist` — `DISCOGS_USERNAME`
+  doesn't match a real Discogs account. Check the exact, case-sensitive
+  username in the profile URL and update it in `wrangler.jsonc` (not the
+  dashboard — see why above).
+- `Discogs API responded 429` — rate limited. The job already retries with
+  backoff; if it still fails, the previous data keeps being served and the
+  next scheduled run tries again. Visitors can no longer cause this.
+
+**The site shows sample records instead of mine**
+The front end falls back to sample data whenever `/api/collection` isn't
+returning records — see the `503` entry above.
 
 **It worked once, then stopped after a later push**
 Almost always: a plain variable in the dashboard got overwritten by what's

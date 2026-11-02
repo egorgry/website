@@ -12,5 +12,15 @@
   },
   "vars": {
     "DISCOGS_USERNAME": "gjm4rc"
+  },
+  // Holds the latest copy of your collection. No "id" on purpose: wrangler
+  // (4.45.0+) creates the namespace on first deploy. If that doesn't work in
+  // your Cloudflare build, create one yourself and add "id": "<namespace id>".
+  "kv_namespaces": [
+    { "binding": "COLLECTION" }
+  ],
+  // Refresh the collection from Discogs every 6 hours (UTC).
+  "triggers": {
+    "crons": ["0 */6 * * *"]
   }
 }

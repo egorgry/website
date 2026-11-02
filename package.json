@@ -4,9 +4,9 @@
   "version": "1.0.0",
   "scripts": {
     "build": "node scripts/build.mjs",
-    "preview": "npm run build && npx wrangler pages dev dist"
+    "preview": "npm run build && npx wrangler dev --test-scheduled"
   },
   "devDependencies": {
-    "wrangler": "^4.15.2"
+    "wrangler": "^4.45.0"
   }
 }
